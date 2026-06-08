@@ -1,4 +1,4 @@
-javascript:(function(){
+(function(){
 if(document.getElementById('_akg_overlay'))return;
 var h=location.host;
 var style=document.createElement('style');
@@ -19,104 +19,105 @@ document.getElementById('_akg_close').onclick=function(){ov.remove();};
 ov.onclick=function(e){if(e.target===ov)ov.remove();};
 
 function showCircle(status){
-circleWrap.style.display='flex';
-btn.style.display='none';
-inp.style.display='none';
-var wrap=document.getElementById('_akg_inp_wrap');
-if(wrap)wrap.style.display='none';
-if(err)err.style.display='none';
-statusEl.textContent=status||'\u23f3 Processing...';
+  circleWrap.style.display='flex';
+  btn.style.display='none';
+  inp.style.display='none';
+  document.getElementById('_akg_inp_wrap').style.display='none';
+  err.style.display='none';
+  statusEl.textContent=status||'\u23f3 Processing...';
 }
 
 function startCountdown(onDone){
-showCircle('\u23f3 Please wait...');
-var s=35;
-var total=377;
-numEl.textContent=s;
-if(arc)arc.setAttribute('stroke','#6c47ff');
-if(arc)arc.setAttribute('stroke-dashoffset','0');
-var iv=setInterval(function(){
-s--;
-numEl.textContent=s;
-if(arc)arc.setAttribute('stroke-dashoffset',(total/35)*(35-s));
-if(s<=0){
-clearInterval(iv);
-numEl.textContent='\u26a1';
-if(arc)arc.setAttribute('stroke','#4ade80');
-statusEl.textContent='\ud83d\ude80 Bypassing...';
-onDone();
-}
-},1000);
+  showCircle('\u23f3 Please wait...');
+  var s=35;var total=377;
+  numEl.textContent=s;
+  arc.setAttribute('stroke','#6c47ff');
+  arc.setAttribute('stroke-dashoffset','0');
+  var iv=setInterval(function(){
+    s--;
+    numEl.textContent=s;
+    arc.setAttribute('stroke-dashoffset',(total/35)*(35-s));
+    if(s<=0){
+      clearInterval(iv);
+      numEl.textContent='\u26a1';
+      arc.setAttribute('stroke','#4ade80');
+      statusEl.textContent='\ud83d\ude80 Bypassing...';
+      onDone();
+    }
+  },1000);
 }
 
+
 function bypassSite(domain,cb){
-var proto=domain==='rodaemotor.com'?'http':'https';
-fetch(proto+'://'+domain+'/api/session-info',{credentials:'include',headers:{'Accept':'*/*'}})
-.then(function(r){return r.json();})
-.then(function(d){
-if(!d.sessionToken){statusEl.textContent='\u274c No session found!';return;}
-statusEl.textContent='\ud83d\udd11 Fetching key...';
-var progress=(d.totalStage||0)+1;
-var inp2=encodeURIComponent(JSON.stringify({"0":{"json":{"token":d.sessionToken,"progress":progress,"stageId":d.stageId}}}));
-fetch(proto+'://'+domain+'/api/trpc/linkSession.nextStage?batch=1&input='+inp2,{
-credentials:'include',
-headers:{'trpc-accept':'application/jsonl','x-trpc-source':'nextjs-react','Accept':'*/*'}
-}).then(function(r){return r.text();})
-.then(function(t){
-var dest=null,url=null;
-t.trim().split('\n').forEach(function(l){
-try{
-var j=JSON.parse(l);
-if(j&&j.json&&Array.isArray(j.json)&&j.json[2]){
-var dd=j.json[2][0][0];
-if(dd){if(dd.destinationLink)dest=dd.destinationLink;if(dd.url)url=dd.url;}
-}
-}catch(e){}
-});
-cb(dest,url);
-});
-})
-.catch(function(e){statusEl.textContent='\u274c Error: '+e.message;});
+  var proto=domain==='rodaemotor.com'?'http':'http';
+  fetch(proto+'://'+domain+'/api/session-info',{credentials:'include',headers:{'Accept':'*/*'}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.sessionToken){statusEl.textContent='\u274c No session found!';return;}
+    statusEl.textContent='\ud83d\udd11 Fetching key...';
+    var progress=d.totalStage+1;
+    var inp2=encodeURIComponent(JSON.stringify({"0":{"json":{"token":d.sessionToken,"progress":progress,"stageId":d.stageId}}}));
+    fetch(proto+'://'+domain+'/api/trpc/linkSession.nextStage?batch=1&input='+inp2,{
+      credentials:'include',
+      headers:{'trpc-accept':'application/jsonl','x-trpc-source':'nextjs-react','Accept':'*/*'}
+    }).then(function(r){return r.text();})
+    .then(function(t){
+      var dest=null,url=null;
+      t.trim().split('\n').forEach(function(l){
+        try{
+          var j=JSON.parse(l);
+          if(j&&j.json&&Array.isArray(j.json)&&j.json[2]){
+            var dd=j.json[2][0][0];
+            if(dd){if(dd.destinationLink)dest=dd.destinationLink;if(dd.url)url=dd.url;}
+          }
+        }catch(e){}
+      });
+      cb(dest,url);
+    });
+  })
+  .catch(function(e){statusEl.textContent='\u274c Error: '+e.message;});
 }
 
 function runFullBypass(){
-startCountdown(function(){
-if(h.includes('tarviral.com')){
-bypassSite('tarviral.com',function(dest){
-if(dest){
-statusEl.textContent='\u2705 Done! Redirecting to key...';
-setTimeout(function(){ov.remove();window.location.href=dest;},800);
-}else{statusEl.textContent='\u274c Bypass failed! Try again.';}
-});
-}else if(h.includes('rodaemotor.com')){
-bypassSite('rodaemotor.com',function(dest,url){
-var next=dest||url;
-if(next){
-statusEl.textContent='\u2705 Jumping to next stage...';
-setTimeout(function(){ov.remove();window.location.href=next;},800);
-}else{statusEl.textContent='\u274c Failed! Try again.';}
-});
-}
-});
+  startCountdown(function(){
+    if(h.includes('tarviral.com')){
+      bypassSite('tarviral.com',function(dest){
+        if(dest){
+          statusEl.textContent='\u2705 Done! Redirecting to key...';
+          setTimeout(function(){ov.remove();window.location.href=dest;},800);
+        }else{statusEl.textContent='\u274c Bypass failed! Try again.';}
+      });
+    }else if(h.includes('rodaemotor.com')){
+      bypassSite('rodaemotor.com',function(dest,url){
+        var next=dest||url;
+        if(next){
+          statusEl.textContent='\u2705 Jumping to next stage...';
+          setTimeout(function(){ov.remove();window.location.href=next;},800);
+        }else{statusEl.textContent='\u274c Failed! Try again.';}
+      });
+    }
+  });
 }
 
+
+
 btn.onclick=function(){
-var val=inp.value.trim().toUpperCase();
-if(val!=='@SHADOWGMRFF'){err.textContent='\u274c Wrong key! Access denied.';inp.value='';return;}
-err.textContent='';
-if(h.includes('tarviral.com')||h.includes('rodaemotor.com')){
-runFullBypass();
-}else if(h.includes('aincradmods.com')){
-ov.remove();
-fetch('https://aincradmods.com/getkey.data',{method:'POST',credentials:'include',headers:{'content-type':'application/x-www-form-urlencoded;charset=UTF-8','accept':'*/*','origin':'https://aincradmods.com','referer':'https://aincradmods.com/getkey','x-requested-with':'mark.via.gp'}})
-.then(function(){window.location.href='https://alpharede.com/aincrad2';})
-.catch(function(){window.location.href='https://alpharede.com/aincrad2';});
-}else if(h.includes('alpharede.com')){
-ov.remove();
-window.location.href='https://alpharede.com/aincrad2';
-}else{
-err.textContent='\u26a0 Open aincradmods.com/getkey first!';
-}
+  var val=inp.value.trim().toUpperCase();
+  if(val!=='@SHADOWGMRFF'){err.textContent='\u274c Wrong key! Access denied.';inp.value='';return;}
+  err.textContent='';
+  if(h.includes('tarviral.com')||h.includes('rodaemotor.com')){
+    runFullBypass();
+  }else if(h.includes('aincradmods.com')){
+    ov.remove();
+    fetch('https://aincradmods.com/getkey.data',{method:'POST',credentials:'include',headers:{'content-type':'application/x-www-form-urlencoded;charset=UTF-8','accept':'*/*','origin':'https://aincradmods.com','referer':'https://aincradmods.com/getkey','x-requested-with':'mark.via.gp'}})
+    .then(function(){window.location.href='https://alpharede.com/aincrad2';})
+    .catch(function(){window.location.href='https://alpharede.com/aincrad2';});
+  }else if(h.includes('alpharede.com')){
+    ov.remove();
+    window.location.href='https://alpharede.com/aincrad2';
+  }else{
+    err.textContent='\u26a0 Open aincradmods.com/getkey first!';
+  }
 };
 inp.addEventListener('keydown',function(e){if(e.key==='Enter')btn.click();});
 inp.focus();
